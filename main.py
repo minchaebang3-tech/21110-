@@ -21,22 +21,52 @@ COL_GEN = "발전량(kWh)"
 # ------------------------------------------------------------
 @st.cache_data
 def load_data(path):
-    # 인코딩: utf-8-sig로 먼저 읽고, 실패하면 cp949로 읽기
-    try:
-        df = pd.read_csv(path, encoding="utf-8-sig")
-    except UnicodeDecodeError:
-        df = pd.read_csv(path, encoding="cp949")
+    # 파일 맨 앞 글자로 진짜 엑셀 파일인지 확인 (엑셀은 "PK"로 시작해요)
+    with open(path, "rb") as f:
+        head = f.read(2)
 
-    # 컬럼 이름 앞뒤 공백 제거
-    df.columns = df.columns.str.strip()
+    if head == b"PK":
+        # 엑셀(.xlsx)을 data.csv로 이름만 바꾼 경우
+        df = pd.read_excel(path)
+    else:
+        # 인코딩: utf-8-sig로 먼저 읽고, 실패하면 cp949로 읽기
+        # sep=None: 쉼표/탭 등 구분 기호를 자동으로 찾아요
+        df = None
+        for enc in ["utf-8-sig", "cp949"]:
+            try:
+                df = pd.read_csv(path, encoding=enc, sep=None, engine="python")
+                break
+            except (UnicodeDecodeError, pd.errors.ParserError):
+                continue
+        if df is None:
+            raise ValueError("CSV 인코딩이나 형식을 읽을 수 없어요.")
+
+    # 컬럼 이름 정리 (단위가 있든 없든 같은 이름으로 통일)
+    rename = {}
+    for c in df.columns:
+        name = str(c).strip()
+        if name.startswith("연월일"):
+            rename[c] = COL_DATE
+        elif name.startswith("발전설비"):
+            rename[c] = COL_FAC
+        elif name.startswith("설비용량"):
+            rename[c] = COL_CAP
+        elif name.startswith("발전량"):
+            rename[c] = COL_GEN
+    df = df.rename(columns=rename)
 
     # 필요한 컬럼이 다 있는지 확인
     for col in [COL_DATE, COL_FAC, COL_CAP, COL_GEN]:
         if col not in df.columns:
             raise KeyError(col)
 
-    # 연월일 -> 날짜 형식
-    df[COL_DATE] = pd.to_datetime(df[COL_DATE], errors="coerce")
+    # 연월일 -> 날짜 형식 (20231101 같은 숫자 형태도 처리)
+    if not pd.api.types.is_datetime64_any_dtype(df[COL_DATE]):
+        s = df[COL_DATE].astype(str).str.strip().str.replace(r"\.0$", "", regex=True)
+        parsed = pd.to_datetime(s, format="%Y%m%d", errors="coerce")
+        if parsed.isna().mean() > 0.5:
+            parsed = pd.to_datetime(s, errors="coerce")
+        df[COL_DATE] = parsed
 
     # 숫자 컬럼 -> 숫자 형식 (쉼표가 있어도 처리)
     for col in [COL_CAP, COL_GEN]:
