@@ -12,10 +12,184 @@ import streamlit as st
 # 기본 설정
 # ============================================================
 st.set_page_config(
-    page_title="재생에너지 발전량 대시보드",
+    page_title="신재생에너지 발전량 분석",
     page_icon="☀️",
     layout="wide"
 )
+
+
+# ============================================================
+# 디자인 설정
+# ============================================================
+st.markdown("""
+<style>
+
+    /* 전체 배경 */
+    .stApp {
+        background-color: #F7FAF5;
+    }
+
+    /* 상단 여백 */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 1200px;
+    }
+
+    /* 제목 */
+    h1 {
+        color: #245C3A;
+        font-weight: 800;
+    }
+
+    h2, h3 {
+        color: #2F6B45;
+    }
+
+    /* 일반 글씨 */
+    p {
+        color: #4F6255;
+    }
+
+    /* 구분선 */
+    hr {
+        border: none;
+        border-top: 1px solid #DCE8DC;
+        margin: 1.5rem 0;
+    }
+
+    /* 버튼 */
+    .stButton > button {
+        border-radius: 14px;
+        border: 1px solid #C9DEC9;
+        background-color: white;
+        color: #245C3A;
+        font-weight: 700;
+        padding: 0.7rem 1rem;
+        transition: 0.2s;
+    }
+
+    .stButton > button:hover {
+        border-color: #78A96F;
+        background-color: #EDF6E9;
+        color: #245C3A;
+    }
+
+    /* 메인 선택 카드 */
+    .menu-card {
+        background: white;
+        border: 1px solid #DCE8DC;
+        border-radius: 22px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 14px rgba(45, 90, 55, 0.06);
+    }
+
+    .menu-icon {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .menu-title {
+        color: #245C3A;
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+
+    .menu-description {
+        color: #68786D;
+        font-size: 0.9rem;
+        margin-top: 0.4rem;
+    }
+
+    /* 상단 히어로 영역 */
+    .hero {
+        background: linear-gradient(
+            135deg,
+            #EDF7E9 0%,
+            #FFF9E8 100%
+        );
+        border: 1px solid #DCE8DC;
+        border-radius: 28px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-title {
+        color: #245C3A;
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-subtitle {
+        color: #617064;
+        font-size: 1.05rem;
+    }
+
+    .sun {
+        font-size: 3rem;
+    }
+
+    /* 정보 박스 */
+    .info-box {
+        background-color: #F0F7ED;
+        border-left: 5px solid #76A86B;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        color: #45604B;
+        margin: 1rem 0;
+    }
+
+    /* 출처 */
+    .source-box {
+        background-color: #FFF9E7;
+        border: 1px solid #F0E2A9;
+        border-radius: 12px;
+        padding: 1rem;
+        color: #6D623B;
+        margin-top: 1.5rem;
+    }
+
+    /* Metric 카드 */
+    [data-testid="stMetric"] {
+        background-color: white;
+        border: 1px solid #DCE8DC;
+        border-radius: 18px;
+        padding: 1.2rem;
+        box-shadow: 0 3px 12px rgba(45, 90, 55, 0.05);
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #68786D;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #245C3A;
+        font-weight: 800;
+    }
+
+    /* 사이드바 */
+    [data-testid="stSidebar"] {
+        background-color: #EFF6EC;
+        border-right: 1px solid #DCE8DC;
+    }
+
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 {
+        color: #245C3A;
+    }
+
+    /* 데이터프레임 */
+    [data-testid="stDataFrame"] {
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -30,7 +204,7 @@ class DataError(Exception):
 
 
 # ============================================================
-# 1. 데이터 파일 찾기
+# 데이터 파일 찾기
 # ============================================================
 def find_data_file():
 
@@ -42,7 +216,9 @@ def find_data_file():
     candidates = []
 
     for pattern in ("*.csv", "*.xlsx", "*.xls"):
-        candidates += glob.glob(os.path.join(BASE_DIR, pattern))
+        candidates += glob.glob(
+            os.path.join(BASE_DIR, pattern)
+        )
 
     candidates = sorted(candidates)
 
@@ -53,7 +229,7 @@ def find_data_file():
 
 
 # ============================================================
-# 2. CSV / 엑셀 읽기
+# CSV / 엑셀 읽기
 # ============================================================
 def find_header_index(rows):
 
@@ -61,8 +237,15 @@ def find_header_index(rows):
 
         cells = [str(c).strip() for c in row]
 
-        has_date = any(c.startswith("연월일") for c in cells)
-        has_gen = any(c.startswith("발전량") for c in cells)
+        has_date = any(
+            c.startswith("연월일")
+            for c in cells
+        )
+
+        has_gen = any(
+            c.startswith("발전량")
+            for c in cells
+        )
 
         if has_date and has_gen:
             return i
@@ -72,19 +255,24 @@ def find_header_index(rows):
 
 def rows_to_df(rows, header_idx):
 
-    header = [str(c).strip() for c in rows[header_idx]]
-    n = len(header)
+    header = [
+        str(c).strip()
+        for c in rows[header_idx]
+    ]
 
+    n = len(header)
     body = []
 
     for r in rows[header_idx + 1:]:
 
         r = list(r)
         r = (r + [""] * n)[:n]
-
         body.append(r)
 
-    return pd.DataFrame(body, columns=header)
+    return pd.DataFrame(
+        body,
+        columns=header
+    )
 
 
 def read_table(path):
@@ -92,10 +280,17 @@ def read_table(path):
     with open(path, "rb") as f:
         head = f.read(8)
 
-    # 엑셀 파일
-    if head[:2] == b"PK" or head[:4] == b"\xd0\xcf\x11\xe0":
+    # 엑셀
+    if (
+        head[:2] == b"PK"
+        or head[:4] == b"\xd0\xcf\x11\xe0"
+    ):
 
-        engine = "openpyxl" if head[:2] == b"PK" else "xlrd"
+        engine = (
+            "openpyxl"
+            if head[:2] == b"PK"
+            else "xlrd"
+        )
 
         raw = pd.read_excel(
             path,
@@ -103,7 +298,10 @@ def read_table(path):
             engine=engine
         )
 
-        raw = raw.astype(object).where(raw.notna(), "")
+        raw = raw.astype(object).where(
+            raw.notna(),
+            ""
+        )
 
         rows = raw.values.tolist()
 
@@ -111,7 +309,7 @@ def read_table(path):
 
         if idx is None:
             raise DataError(
-                "엑셀 파일에서 제목줄(연월일, 발전량 ...)을 찾지 못했어요."
+                "엑셀 파일에서 제목줄을 찾지 못했어요."
             )
 
         return rows_to_df(rows, idx)
@@ -120,14 +318,23 @@ def read_table(path):
     with open(path, "rb") as f:
         data = f.read()
 
-    for enc in ("utf-8-sig", "cp949", "utf-16"):
+    for enc in (
+        "utf-8-sig",
+        "cp949",
+        "utf-16"
+    ):
 
         try:
             text = data.decode(enc)
         except UnicodeDecodeError:
             continue
 
-        for sep in (",", "\t", ";", "|"):
+        for sep in (
+            ",",
+            "\t",
+            ";",
+            "|"
+        ):
 
             try:
                 rows = list(
@@ -142,7 +349,10 @@ def read_table(path):
             idx = find_header_index(rows)
 
             if idx is not None:
-                return rows_to_df(rows, idx)
+                return rows_to_df(
+                    rows,
+                    idx
+                )
 
     raise DataError(
         "파일에서 제목줄을 찾지 못했어요."
@@ -150,7 +360,7 @@ def read_table(path):
 
 
 # ============================================================
-# 3. 날짜 / 숫자 정리
+# 날짜 / 숫자 정리
 # ============================================================
 def parse_dates(series):
 
@@ -161,17 +371,19 @@ def parse_dates(series):
         series
         .astype(str)
         .str.strip()
-        .str.replace(r"\.0$", "", regex=True)
+        .str.replace(
+            r"\.0$",
+            "",
+            regex=True
+        )
     )
 
-    # 20231101
     parsed = pd.to_datetime(
         t,
         format="%Y%m%d",
         errors="coerce"
     )
 
-    # 엑셀 날짜 번호
     num = pd.to_numeric(
         t,
         errors="coerce"
@@ -187,7 +399,6 @@ def parse_dates(series):
 
     parsed = parsed.fillna(serial)
 
-    # 일반적인 날짜
     if parsed.isna().any():
 
         auto = pd.to_datetime(
@@ -205,7 +416,11 @@ def to_number(series):
     cleaned = (
         series
         .astype(str)
-        .str.replace(",", "", regex=False)
+        .str.replace(
+            ",",
+            "",
+            regex=False
+        )
         .str.strip()
     )
 
@@ -216,7 +431,7 @@ def to_number(series):
 
 
 # ============================================================
-# 4. 데이터 불러오기
+# 데이터 불러오기
 # ============================================================
 @st.cache_data
 def load_data(path):
@@ -262,8 +477,8 @@ def load_data(path):
     if missing:
 
         raise DataError(
-            f"필요한 컬럼이 없어요: "
-            f"{', '.join(missing)}"
+            "필요한 컬럼이 없어요: "
+            + ", ".join(missing)
         )
 
     df = df[
@@ -302,7 +517,11 @@ def load_data(path):
 
     df = df[
         ~df[COL_FAC].isin(
-            ["", "nan", "None"]
+            [
+                "",
+                "nan",
+                "None"
+            ]
         )
     ]
 
@@ -319,7 +538,7 @@ def load_data(path):
 
 
 # ============================================================
-# 5. 데이터 불러오기
+# 데이터 불러오기
 # ============================================================
 try:
 
@@ -355,7 +574,7 @@ except Exception as e:
 
 
 # ============================================================
-# 6. 페이지 상태
+# 페이지 상태
 # ============================================================
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -374,21 +593,18 @@ def go_page(page):
 
 
 # ============================================================
-# 7. 지역 추정
+# 지역 추정
 # ============================================================
 def get_region(facility):
 
     name = str(facility).strip()
 
-    # 신보령 → 보령
     if name.startswith("신보령"):
         return "보령"
 
-    # 신서천 → 서천
     if name.startswith("신서천"):
         return "서천"
 
-    # 제주 상명풍력ESS는 제주상명풍력과 같은 지역
     if name.startswith("상명풍력"):
         return "제주"
 
@@ -418,101 +634,194 @@ def get_region(facility):
 
 
 # ============================================================
-# 8. 메인 화면
+# 메인 화면
 # ============================================================
 if st.session_state.page == "home":
 
-    st.title(
-        "☀️ 신재생에너지 발전량 분석"
-    )
+    st.markdown("""
+    <div class="hero">
 
-    st.caption(
-        "한국중부발전 신재생에너지 발전량 공공데이터를 "
-        "활용한 데이터 시각화 대시보드"
-    )
+        <div class="sun">☀️</div>
 
-    st.divider()
+        <div class="hero-title">
+            신재생에너지 발전량 분석
+        </div>
 
-    st.subheader(
-        "🔎 무엇을 볼까요?"
+        <div class="hero-subtitle">
+            공공데이터로 살펴보는
+            우리의 친환경 에너지 생산
+        </div>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(
+        "### 🌿 원하는 분석을 선택하세요"
     )
 
     st.write(
-        "원하는 분석을 선택하세요."
+        "발전량 데이터를 다양한 관점에서 "
+        "쉽게 확인할 수 있습니다."
     )
 
-    # 2 × 2 버튼
+    st.write("")
+
+    # 첫 번째 줄
     c1, c2 = st.columns(2)
 
     with c1:
 
+        st.markdown("""
+        <div class="menu-card">
+
+            <div class="menu-icon">📈</div>
+
+            <div class="menu-title">
+                일별 발전량
+            </div>
+
+            <div class="menu-description">
+                날짜별 발전량과 평균 이용률을 확인합니다.
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
         if st.button(
-            "📈 일별 발전량",
+            "📈 일별 발전량 보기",
+            key="daily_button",
             use_container_width=True
         ):
             go_page("daily")
 
     with c2:
 
+        st.markdown("""
+        <div class="menu-card">
+
+            <div class="menu-icon">📊</div>
+
+            <div class="menu-title">
+                월별 발전량
+            </div>
+
+            <div class="menu-description">
+                월별 발전량 변화를 비교합니다.
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
         if st.button(
-            "📊 월별 발전량",
+            "📊 월별 발전량 보기",
+            key="monthly_button",
             use_container_width=True
         ):
             go_page("monthly")
 
+    # 두 번째 줄
     c3, c4 = st.columns(2)
 
     with c3:
 
+        st.markdown("""
+        <div class="menu-card">
+
+            <div class="menu-icon">🏆</div>
+
+            <div class="menu-title">
+                발전설비별 순위
+            </div>
+
+            <div class="menu-description">
+                발전설비별 총 발전량을 비교합니다.
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
         if st.button(
-            "🏆 발전설비별 순위",
+            "🏆 발전설비별 순위 보기",
+            key="ranking_button",
             use_container_width=True
         ):
             go_page("ranking")
 
     with c4:
 
+        st.markdown("""
+        <div class="menu-card">
+
+            <div class="menu-icon">🗺️</div>
+
+            <div class="menu-title">
+                지역별 발전량
+            </div>
+
+            <div class="menu-description">
+                발전설비의 지역별 발전량을 비교합니다.
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
         if st.button(
-            "🗺️ 지역별 발전량",
+            "🗺️ 지역별 발전량 보기",
+            key="region_button",
             use_container_width=True
         ):
             go_page("region")
 
-    st.divider()
+    st.write("")
 
-    st.info(
-        "📌 데이터 기간: "
-        f"{df[COL_DATE].min().strftime('%Y-%m-%d')} ~ "
-        f"{df[COL_DATE].max().strftime('%Y-%m-%d')}"
+    st.markdown(
+        f"""
+        <div class="info-box">
+            📅 <b>데이터 기간</b><br>
+            {df[COL_DATE].min().strftime('%Y-%m-%d')}
+            ~
+            {df[COL_DATE].max().strftime('%Y-%m-%d')}
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    st.caption(
-        "출처: 공공데이터포털(data.go.kr) "
-        "한국중부발전(주) 신재생에너지 발전량"
-    )
+    st.markdown("""
+    <div class="source-box">
+        ☀️ <b>데이터 출처</b><br>
+        공공데이터포털(data.go.kr)
+        한국중부발전(주) 신재생에너지 발전량
+    </div>
+    """, unsafe_allow_html=True)
 
     st.stop()
 
 
 # ============================================================
-# 9. 공통: 뒤로가기 버튼
+# 분석 페이지 공통
 # ============================================================
-if st.button("← 🏠 메인으로 돌아가기"):
-
+if st.button(
+    "← 🏠 메인으로 돌아가기",
+    key="home_button"
+):
     go_home()
-
 
 st.divider()
 
 
 # ============================================================
-# 10. 일별 발전량
+# 일별 발전량
 # ============================================================
 if st.session_state.page == "daily":
 
     st.title("📈 일별 발전량")
 
-    st.sidebar.header("🔎 조건 선택")
+    st.caption(
+        "날짜와 발전설비를 선택하여 "
+        "일별 발전량을 확인하세요."
+    )
+
+    st.sidebar.header("🌿 조건 선택")
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -538,9 +847,11 @@ if st.session_state.page == "daily":
         not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
+
         st.warning(
             "기간의 시작일과 종료일을 모두 선택해 주세요."
         )
+
         st.stop()
 
     if len(selected) == 0:
@@ -568,7 +879,6 @@ if st.session_state.page == "daily":
 
         st.stop()
 
-    # 카드
     total_gen = filtered[COL_GEN].sum()
 
     num_days = filtered[COL_DATE].nunique()
@@ -601,23 +911,22 @@ if st.session_state.page == "daily":
     c1, c2, c3 = st.columns(3)
 
     c1.metric(
-        "총 발전량",
+        "☀️ 총 발전량",
         f"{total_gen:,.0f} kWh"
     )
 
     c2.metric(
-        "일평균 발전량",
+        "📅 일평균 발전량",
         f"{daily_avg:,.0f} kWh"
     )
 
     c3.metric(
-        "평균 이용률",
+        "🌿 평균 이용률",
         util_text
     )
 
     st.divider()
 
-    # 일별 그래프
     daily = (
         filtered
         .groupby(
@@ -637,6 +946,12 @@ if st.session_state.page == "daily":
             COL_GEN: "발전량(kWh)",
             COL_FAC: "발전설비"
         }
+    )
+
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        hovermode="x unified"
     )
 
     st.plotly_chart(
@@ -661,13 +976,17 @@ if st.session_state.page == "daily":
 
 
 # ============================================================
-# 11. 월별 발전량
+# 월별 발전량
 # ============================================================
 elif st.session_state.page == "monthly":
 
     st.title("📊 월별 발전량")
 
-    st.sidebar.header("🔎 조건 선택")
+    st.caption(
+        "월별 발전량의 변화를 한눈에 비교합니다."
+    )
+
+    st.sidebar.header("🌿 조건 선택")
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -693,9 +1012,11 @@ elif st.session_state.page == "monthly":
         not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
+
         st.warning(
             "기간의 시작일과 종료일을 모두 선택해 주세요."
         )
+
         st.stop()
 
     if len(selected) == 0:
@@ -751,6 +1072,11 @@ elif st.session_state.page == "monthly":
         }
     )
 
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white"
+    )
+
     st.plotly_chart(
         fig,
         use_container_width=True
@@ -766,11 +1092,15 @@ elif st.session_state.page == "monthly":
 
 
 # ============================================================
-# 12. 발전설비별 순위
+# 발전설비별 순위
 # ============================================================
 elif st.session_state.page == "ranking":
 
     st.title("🏆 발전설비별 발전량 순위")
+
+    st.caption(
+        "선택한 기간 동안 발전량이 많은 설비를 비교합니다."
+    )
 
     min_date = df[COL_DATE].min().date()
     max_date = df[COL_DATE].max().date()
@@ -786,9 +1116,11 @@ elif st.session_state.page == "ranking":
         not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
+
         st.warning(
             "기간의 시작일과 종료일을 모두 선택해 주세요."
         )
+
         st.stop()
 
     start = pd.to_datetime(period[0])
@@ -842,6 +1174,11 @@ elif st.session_state.page == "ranking":
         title=f"발전량 상위 {top_n}개 설비"
     )
 
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white"
+    )
+
     st.plotly_chart(
         fig,
         use_container_width=True
@@ -874,16 +1211,23 @@ elif st.session_state.page == "ranking":
 
 
 # ============================================================
-# 13. 지역별 발전량
+# 지역별 발전량
 # ============================================================
 elif st.session_state.page == "region":
 
     st.title("🗺️ 지역별 발전량")
 
     st.caption(
-        "※ 별도의 지역 컬럼이 없어 발전설비 이름의 "
-        "앞부분을 기준으로 지역을 추정했습니다."
+        "발전설비 이름을 기준으로 지역을 추정하여 "
+        "발전량을 비교합니다."
     )
+
+    st.markdown("""
+    <div class="info-box">
+        💡 별도의 지역 컬럼이 없어 발전설비 이름의
+        앞부분을 기준으로 지역을 추정했습니다.
+    </div>
+    """, unsafe_allow_html=True)
 
     min_date = df[COL_DATE].min().date()
     max_date = df[COL_DATE].max().date()
@@ -899,9 +1243,11 @@ elif st.session_state.page == "region":
         not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
+
         st.warning(
             "기간의 시작일과 종료일을 모두 선택해 주세요."
         )
+
         st.stop()
 
     start = pd.to_datetime(period[0])
@@ -941,6 +1287,11 @@ elif st.session_state.page == "region":
         title="지역별 총 발전량"
     )
 
+    fig.update_layout(
+        plot_bgcolor="white",
+        paper_bgcolor="white"
+    )
+
     st.plotly_chart(
         fig,
         use_container_width=True
@@ -955,7 +1306,10 @@ elif st.session_state.page == "region":
     ).round(1)
 
     region_table = region_table[
-        ["지역", "발전량(MWh)"]
+        [
+            "지역",
+            "발전량(MWh)"
+        ]
     ]
 
     st.dataframe(
