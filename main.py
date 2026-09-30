@@ -438,7 +438,7 @@ if st.session_state.page == "home":
     )
 
     st.write(
-        "원하는 분석을 선택하세요."
+        "원하는 분석 선택"
     )
 
     # 2 × 2 버튼
