@@ -19,24 +19,21 @@ st.set_page_config(
 
 
 # ============================================================
-# 디자인 설정
+# 디자인
 # ============================================================
 st.markdown("""
 <style>
 
-    /* 전체 배경 */
     .stApp {
         background-color: #F7FAF5;
     }
 
-    /* 상단 여백 */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
         max-width: 1200px;
     }
 
-    /* 제목 */
     h1 {
         color: #245C3A;
         font-weight: 800;
@@ -46,12 +43,10 @@ st.markdown("""
         color: #2F6B45;
     }
 
-    /* 일반 글씨 */
     p {
         color: #4F6255;
     }
 
-    /* 구분선 */
     hr {
         border: none;
         border-top: 1px solid #DCE8DC;
@@ -60,12 +55,15 @@ st.markdown("""
 
     /* 버튼 */
     .stButton > button {
-        border-radius: 14px;
+        width: 100%;
+        min-height: 90px;
+        border-radius: 18px;
         border: 1px solid #C9DEC9;
         background-color: white;
         color: #245C3A;
         font-weight: 700;
-        padding: 0.7rem 1rem;
+        font-size: 1.05rem;
+        box-shadow: 0 4px 12px rgba(45, 90, 55, 0.06);
         transition: 0.2s;
     }
 
@@ -73,65 +71,41 @@ st.markdown("""
         border-color: #78A96F;
         background-color: #EDF6E9;
         color: #245C3A;
+        transform: translateY(-2px);
     }
 
-    /* 메인 선택 카드 */
-    .menu-card {
-        background: white;
-        border: 1px solid #DCE8DC;
-        border-radius: 22px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 4px 14px rgba(45, 90, 55, 0.06);
-    }
-
-    .menu-icon {
-        font-size: 2.2rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .menu-title {
-        color: #245C3A;
-        font-size: 1.2rem;
-        font-weight: 800;
-    }
-
-    .menu-description {
-        color: #68786D;
-        font-size: 0.9rem;
-        margin-top: 0.4rem;
-    }
-
-    /* 상단 히어로 영역 */
+    /* 메인 제목 영역 */
     .hero {
         background: linear-gradient(
             135deg,
             #EDF7E9 0%,
             #FFF9E8 100%
         );
+
         border: 1px solid #DCE8DC;
         border-radius: 28px;
         padding: 2.5rem;
         margin-bottom: 2rem;
     }
 
+    .hero-icon {
+        font-size: 3rem;
+    }
+
     .hero-title {
         color: #245C3A;
         font-size: 2.5rem;
         font-weight: 900;
-        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
     }
 
     .hero-subtitle {
         color: #617064;
         font-size: 1.05rem;
+        margin-top: 0.5rem;
     }
 
-    .sun {
-        font-size: 3rem;
-    }
-
-    /* 정보 박스 */
+    /* 안내 박스 */
     .info-box {
         background-color: #F0F7ED;
         border-left: 5px solid #76A86B;
@@ -141,7 +115,7 @@ st.markdown("""
         margin: 1rem 0;
     }
 
-    /* 출처 */
+    /* 출처 박스 */
     .source-box {
         background-color: #FFF9E7;
         border: 1px solid #F0E2A9;
@@ -151,7 +125,7 @@ st.markdown("""
         margin-top: 1.5rem;
     }
 
-    /* Metric 카드 */
+    /* 수치 카드 */
     [data-testid="stMetric"] {
         background-color: white;
         border: 1px solid #DCE8DC;
@@ -181,12 +155,6 @@ st.markdown("""
         color: #245C3A;
     }
 
-    /* 데이터프레임 */
-    [data-testid="stDataFrame"] {
-        border-radius: 14px;
-        overflow: hidden;
-    }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -208,16 +176,26 @@ class DataError(Exception):
 # ============================================================
 def find_data_file():
 
-    main_path = os.path.join(BASE_DIR, "data.csv")
+    main_path = os.path.join(
+        BASE_DIR,
+        "data.csv"
+    )
 
     if os.path.exists(main_path):
         return main_path, False
 
     candidates = []
 
-    for pattern in ("*.csv", "*.xlsx", "*.xls"):
+    for pattern in (
+        "*.csv",
+        "*.xlsx",
+        "*.xls"
+    ):
         candidates += glob.glob(
-            os.path.join(BASE_DIR, pattern)
+            os.path.join(
+                BASE_DIR,
+                pattern
+            )
         )
 
     candidates = sorted(candidates)
@@ -235,7 +213,10 @@ def find_header_index(rows):
 
     for i, row in enumerate(rows[:100]):
 
-        cells = [str(c).strip() for c in row]
+        cells = [
+            str(c).strip()
+            for c in row
+        ]
 
         has_date = any(
             c.startswith("연월일")
@@ -261,12 +242,18 @@ def rows_to_df(rows, header_idx):
     ]
 
     n = len(header)
+
     body = []
 
     for r in rows[header_idx + 1:]:
 
         r = list(r)
-        r = (r + [""] * n)[:n]
+
+        r = (
+            r
+            + [""] * n
+        )[:n]
+
         body.append(r)
 
     return pd.DataFrame(
@@ -308,11 +295,15 @@ def read_table(path):
         idx = find_header_index(rows)
 
         if idx is None:
+
             raise DataError(
                 "엑셀 파일에서 제목줄을 찾지 못했어요."
             )
 
-        return rows_to_df(rows, idx)
+        return rows_to_df(
+            rows,
+            idx
+        )
 
     # CSV
     with open(path, "rb") as f:
@@ -326,6 +317,7 @@ def read_table(path):
 
         try:
             text = data.decode(enc)
+
         except UnicodeDecodeError:
             continue
 
@@ -337,18 +329,21 @@ def read_table(path):
         ):
 
             try:
+
                 rows = list(
                     csv.reader(
                         io.StringIO(text),
                         delimiter=sep
                     )
                 )
+
             except Exception:
                 continue
 
             idx = find_header_index(rows)
 
             if idx is not None:
+
                 return rows_to_df(
                     rows,
                     idx
@@ -360,7 +355,7 @@ def read_table(path):
 
 
 # ============================================================
-# 날짜 / 숫자 정리
+# 날짜 정리
 # ============================================================
 def parse_dates(series):
 
@@ -391,7 +386,10 @@ def parse_dates(series):
 
     serial = pd.to_datetime(
         num.where(
-            num.between(20000, 80000)
+            num.between(
+                20000,
+                80000
+            )
         ),
         unit="D",
         origin="1899-12-30"
@@ -402,7 +400,9 @@ def parse_dates(series):
     if parsed.isna().any():
 
         auto = pd.to_datetime(
-            t.where(parsed.isna()),
+            t.where(
+                parsed.isna()
+            ),
             errors="coerce"
         )
 
@@ -411,6 +411,9 @@ def parse_dates(series):
     return parsed
 
 
+# ============================================================
+# 숫자 정리
+# ============================================================
 def to_number(series):
 
     cleaned = (
@@ -456,7 +459,9 @@ def load_data(path):
         elif name.startswith("발전량"):
             rename[c] = COL_GEN
 
-    df = df.rename(columns=rename)
+    df = df.rename(
+        columns=rename
+    )
 
     df = df.loc[
         :,
@@ -526,6 +531,7 @@ def load_data(path):
     ]
 
     if df.empty:
+
         raise DataError(
             "정리하고 나니 남은 데이터가 없어요."
         )
@@ -577,18 +583,21 @@ except Exception as e:
 # 페이지 상태
 # ============================================================
 if "page" not in st.session_state:
+
     st.session_state.page = "home"
 
 
 def go_home():
 
     st.session_state.page = "home"
+
     st.rerun()
 
 
 def go_page(page):
 
     st.session_state.page = page
+
     st.rerun()
 
 
@@ -597,7 +606,9 @@ def go_page(page):
 # ============================================================
 def get_region(facility):
 
-    name = str(facility).strip()
+    name = str(
+        facility
+    ).strip()
 
     if name.startswith("신보령"):
         return "보령"
@@ -638,161 +649,129 @@ def get_region(facility):
 # ============================================================
 if st.session_state.page == "home":
 
-    st.markdown("""
-    <div class="hero">
-
-        <div class="sun">☀️</div>
-
-        <div class="hero-title">
-            신재생에너지 발전량 분석
-        </div>
-
-        <div class="hero-subtitle">
-            공공데이터로 살펴보는
-            우리의 친환경 에너지 생산
-        </div>
-
-    </div>
-    """, unsafe_allow_html=True)
-
+    # 메인 상단
     st.markdown(
-        "### 🌿 원하는 분석을 선택하세요"
-    )
+        """
+        <div class="hero">
 
-    st.write(
-        "발전량 데이터를 다양한 관점에서 "
-        "쉽게 확인할 수 있습니다."
-    )
-
-    st.write("")
-
-    # 첫 번째 줄
-    c1, c2 = st.columns(2)
-
-    with c1:
-
-        st.markdown("""
-        <div class="menu-card">
-
-            <div class="menu-icon">📈</div>
-
-            <div class="menu-title">
-                일별 발전량
+            <div class="hero-icon">
+                ☀️
             </div>
 
-            <div class="menu-description">
-                날짜별 발전량과 평균 이용률을 확인합니다.
+            <div class="hero-title">
+                신재생에너지 발전량 분석
             </div>
 
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button(
-            "📈 일별 발전량 보기",
-            key="daily_button",
-            use_container_width=True
-        ):
-            go_page("daily")
-
-    with c2:
-
-        st.markdown("""
-        <div class="menu-card">
-
-            <div class="menu-icon">📊</div>
-
-            <div class="menu-title">
-                월별 발전량
+            <div class="hero-subtitle">
+                공공데이터로 살펴보는
+                우리의 친환경 에너지 생산
             </div>
 
-            <div class="menu-description">
-                월별 발전량 변화를 비교합니다.
-            </div>
-
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button(
-            "📊 월별 발전량 보기",
-            key="monthly_button",
-            use_container_width=True
-        ):
-            go_page("monthly")
-
-    # 두 번째 줄
-    c3, c4 = st.columns(2)
-
-    with c3:
-
-        st.markdown("""
-        <div class="menu-card">
-
-            <div class="menu-icon">🏆</div>
-
-            <div class="menu-title">
-                발전설비별 순위
-            </div>
-
-            <div class="menu-description">
-                발전설비별 총 발전량을 비교합니다.
-            </div>
-
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button(
-            "🏆 발전설비별 순위 보기",
-            key="ranking_button",
-            use_container_width=True
-        ):
-            go_page("ranking")
-
-    with c4:
-
-        st.markdown("""
-        <div class="menu-card">
-
-            <div class="menu-icon">🗺️</div>
-
-            <div class="menu-title">
-                지역별 발전량
-            </div>
-
-            <div class="menu-description">
-                발전설비의 지역별 발전량을 비교합니다.
-            </div>
-
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button(
-            "🗺️ 지역별 발전량 보기",
-            key="region_button",
-            use_container_width=True
-        ):
-            go_page("region")
-
-    st.write("")
-
-    st.markdown(
-        f"""
-        <div class="info-box">
-            📅 <b>데이터 기간</b><br>
-            {df[COL_DATE].min().strftime('%Y-%m-%d')}
-            ~
-            {df[COL_DATE].max().strftime('%Y-%m-%d')}
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown("""
-    <div class="source-box">
-        ☀️ <b>데이터 출처</b><br>
-        공공데이터포털(data.go.kr)
-        한국중부발전(주) 신재생에너지 발전량
-    </div>
-    """, unsafe_allow_html=True)
+    # 요청한 문구
+    st.subheader(
+        "🌿 원하는 분석 선택!"
+    )
+
+    st.write(
+        "원하는 분석을 선택하면 "
+        "해당 데이터를 자세히 확인할 수 있습니다."
+    )
+
+    st.write("")
+
+    # --------------------------------------------------------
+    # 일별 / 월별
+    # --------------------------------------------------------
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        if st.button(
+            "📈  일별 발전량\n\n"
+            "날짜별 발전량과 평균 이용률을 확인합니다.",
+            key="daily_button",
+            use_container_width=True
+        ):
+
+            go_page("daily")
+
+    with col2:
+
+        if st.button(
+            "📊  월별 발전량\n\n"
+            "월별 발전량 변화를 비교합니다.",
+            key="monthly_button",
+            use_container_width=True
+        ):
+
+            go_page("monthly")
+
+    st.write("")
+
+    # --------------------------------------------------------
+    # 순위 / 지역
+    # --------------------------------------------------------
+    col3, col4 = st.columns(2)
+
+    with col3:
+
+        if st.button(
+            "🏆  발전설비별 순위\n\n"
+            "발전설비별 총 발전량을 비교합니다.",
+            key="ranking_button",
+            use_container_width=True
+        ):
+
+            go_page("ranking")
+
+    with col4:
+
+        if st.button(
+            "🗺️  지역별 발전량\n\n"
+            "발전설비의 지역별 발전량을 비교합니다.",
+            key="region_button",
+            use_container_width=True
+        ):
+
+            go_page("region")
+
+    st.write("")
+
+    # 데이터 기간
+    st.markdown(
+        f"""
+        <div class="info-box">
+
+            📅 <b>데이터 기간</b><br>
+
+            {df[COL_DATE].min().strftime('%Y-%m-%d')}
+            ~
+            {df[COL_DATE].max().strftime('%Y-%m-%d')}
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # 출처
+    st.markdown(
+        """
+        <div class="source-box">
+
+            ☀️ <b>데이터 출처</b><br>
+
+            공공데이터포털(data.go.kr)
+            한국중부발전(주) 신재생에너지 발전량
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.stop()
 
@@ -804,7 +783,9 @@ if st.button(
     "← 🏠 메인으로 돌아가기",
     key="home_button"
 ):
+
     go_home()
+
 
 st.divider()
 
@@ -821,7 +802,9 @@ if st.session_state.page == "daily":
         "일별 발전량을 확인하세요."
     )
 
-    st.sidebar.header("🌿 조건 선택")
+    st.sidebar.header(
+        "🌿 조건 선택"
+    )
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -833,18 +816,33 @@ if st.session_state.page == "daily":
         default=facilities
     )
 
-    min_date = df[COL_DATE].min().date()
-    max_date = df[COL_DATE].max().date()
+    min_date = (
+        df[COL_DATE]
+        .min()
+        .date()
+    )
+
+    max_date = (
+        df[COL_DATE]
+        .max()
+        .date()
+    )
 
     period = st.sidebar.date_input(
         "기간",
-        value=(min_date, max_date),
+        value=(
+            min_date,
+            max_date
+        ),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(period, (tuple, list))
+        not isinstance(
+            period,
+            (tuple, list)
+        )
         or len(period) != 2
     ):
 
@@ -862,13 +860,20 @@ if st.session_state.page == "daily":
 
         st.stop()
 
-    start = pd.to_datetime(period[0])
-    end = pd.to_datetime(period[1])
+    start = pd.to_datetime(
+        period[0]
+    )
+
+    end = pd.to_datetime(
+        period[1]
+    )
 
     filtered = df[
         (df[COL_FAC].isin(selected))
-        & (df[COL_DATE] >= start)
-        & (df[COL_DATE] <= end)
+        &
+        (df[COL_DATE] >= start)
+        &
+        (df[COL_DATE] <= end)
     ]
 
     if filtered.empty:
@@ -879,9 +884,15 @@ if st.session_state.page == "daily":
 
         st.stop()
 
-    total_gen = filtered[COL_GEN].sum()
+    total_gen = (
+        filtered[COL_GEN]
+        .sum()
+    )
 
-    num_days = filtered[COL_DATE].nunique()
+    num_days = (
+        filtered[COL_DATE]
+        .nunique()
+    )
 
     daily_avg = (
         total_gen / num_days
@@ -902,7 +913,9 @@ if st.session_state.page == "daily":
             * 100
         )
 
-        util_text = f"{utilization:.1f} %"
+        util_text = (
+            f"{utilization:.1f} %"
+        )
 
     else:
 
@@ -930,7 +943,10 @@ if st.session_state.page == "daily":
     daily = (
         filtered
         .groupby(
-            [COL_DATE, COL_FAC],
+            [
+                COL_DATE,
+                COL_FAC
+            ],
             as_index=False
         )[COL_GEN]
         .sum()
@@ -959,7 +975,9 @@ if st.session_state.page == "daily":
         use_container_width=True
     )
 
-    st.subheader("📋 데이터 표")
+    st.subheader(
+        "📋 데이터 표"
+    )
 
     table = filtered.copy()
 
@@ -986,7 +1004,9 @@ elif st.session_state.page == "monthly":
         "월별 발전량의 변화를 한눈에 비교합니다."
     )
 
-    st.sidebar.header("🌿 조건 선택")
+    st.sidebar.header(
+        "🌿 조건 선택"
+    )
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -998,18 +1018,33 @@ elif st.session_state.page == "monthly":
         default=facilities
     )
 
-    min_date = df[COL_DATE].min().date()
-    max_date = df[COL_DATE].max().date()
+    min_date = (
+        df[COL_DATE]
+        .min()
+        .date()
+    )
+
+    max_date = (
+        df[COL_DATE]
+        .max()
+        .date()
+    )
 
     period = st.sidebar.date_input(
         "기간",
-        value=(min_date, max_date),
+        value=(
+            min_date,
+            max_date
+        ),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(period, (tuple, list))
+        not isinstance(
+            period,
+            (tuple, list)
+        )
         or len(period) != 2
     ):
 
@@ -1027,13 +1062,20 @@ elif st.session_state.page == "monthly":
 
         st.stop()
 
-    start = pd.to_datetime(period[0])
-    end = pd.to_datetime(period[1])
+    start = pd.to_datetime(
+        period[0]
+    )
+
+    end = pd.to_datetime(
+        period[1]
+    )
 
     filtered = df[
         (df[COL_FAC].isin(selected))
-        & (df[COL_DATE] >= start)
-        & (df[COL_DATE] <= end)
+        &
+        (df[COL_DATE] >= start)
+        &
+        (df[COL_DATE] <= end)
     ]
 
     if filtered.empty:
@@ -1054,7 +1096,10 @@ elif st.session_state.page == "monthly":
     monthly = (
         monthly
         .groupby(
-            ["월", COL_FAC],
+            [
+                "월",
+                COL_FAC
+            ],
             as_index=False
         )[COL_GEN]
         .sum()
@@ -1082,7 +1127,9 @@ elif st.session_state.page == "monthly":
         use_container_width=True
     )
 
-    st.subheader("📋 월별 발전량 표")
+    st.subheader(
+        "📋 월별 발전량 표"
+    )
 
     st.dataframe(
         monthly,
@@ -1096,24 +1143,42 @@ elif st.session_state.page == "monthly":
 # ============================================================
 elif st.session_state.page == "ranking":
 
-    st.title("🏆 발전설비별 발전량 순위")
-
-    st.caption(
-        "선택한 기간 동안 발전량이 많은 설비를 비교합니다."
+    st.title(
+        "🏆 발전설비별 발전량 순위"
     )
 
-    min_date = df[COL_DATE].min().date()
-    max_date = df[COL_DATE].max().date()
+    st.caption(
+        "선택한 기간 동안 발전량이 많은 "
+        "설비를 비교합니다."
+    )
+
+    min_date = (
+        df[COL_DATE]
+        .min()
+        .date()
+    )
+
+    max_date = (
+        df[COL_DATE]
+        .max()
+        .date()
+    )
 
     period = st.date_input(
         "비교 기간",
-        value=(min_date, max_date),
+        value=(
+            min_date,
+            max_date
+        ),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(period, (tuple, list))
+        not isinstance(
+            period,
+            (tuple, list)
+        )
         or len(period) != 2
     ):
 
@@ -1123,12 +1188,18 @@ elif st.session_state.page == "ranking":
 
         st.stop()
 
-    start = pd.to_datetime(period[0])
-    end = pd.to_datetime(period[1])
+    start = pd.to_datetime(
+        period[0]
+    )
+
+    end = pd.to_datetime(
+        period[1]
+    )
 
     ranking = df[
         (df[COL_DATE] >= start)
-        & (df[COL_DATE] <= end)
+        &
+        (df[COL_DATE] <= end)
     ].copy()
 
     facility_rank = (
@@ -1159,7 +1230,9 @@ elif st.session_state.page == "ranking":
     top_facilities = (
         facility_rank
         .head(top_n)
-        .sort_values(COL_GEN)
+        .sort_values(
+            COL_GEN
+        )
     )
 
     fig = px.bar(
@@ -1184,9 +1257,13 @@ elif st.session_state.page == "ranking":
         use_container_width=True
     )
 
-    st.subheader("📋 전체 발전설비 순위")
+    st.subheader(
+        "📋 전체 발전설비 순위"
+    )
 
-    ranking_table = facility_rank.copy()
+    ranking_table = (
+        facility_rank.copy()
+    )
 
     ranking_table.insert(
         0,
@@ -1197,10 +1274,13 @@ elif st.session_state.page == "ranking":
         )
     )
 
-    ranking_table = ranking_table.rename(
-        columns={
-            COL_GEN: "총 발전량(kWh)"
-        }
+    ranking_table = (
+        ranking_table.rename(
+            columns={
+                COL_GEN:
+                "총 발전량(kWh)"
+            }
+        )
     )
 
     st.dataframe(
@@ -1215,32 +1295,55 @@ elif st.session_state.page == "ranking":
 # ============================================================
 elif st.session_state.page == "region":
 
-    st.title("🗺️ 지역별 발전량")
-
-    st.caption(
-        "발전설비 이름을 기준으로 지역을 추정하여 "
-        "발전량을 비교합니다."
+    st.title(
+        "🗺️ 지역별 발전량"
     )
 
-    st.markdown("""
-    <div class="info-box">
-        💡 별도의 지역 컬럼이 없어 발전설비 이름의
-        앞부분을 기준으로 지역을 추정했습니다.
-    </div>
-    """, unsafe_allow_html=True)
+    st.caption(
+        "발전설비 이름을 기준으로 지역을 "
+        "추정하여 발전량을 비교합니다."
+    )
 
-    min_date = df[COL_DATE].min().date()
-    max_date = df[COL_DATE].max().date()
+    st.markdown(
+        """
+        <div class="info-box">
+
+            💡 별도의 지역 컬럼이 없어
+            발전설비 이름의 앞부분을 기준으로
+            지역을 추정했습니다.
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    min_date = (
+        df[COL_DATE]
+        .min()
+        .date()
+    )
+
+    max_date = (
+        df[COL_DATE]
+        .max()
+        .date()
+    )
 
     period = st.date_input(
         "비교 기간",
-        value=(min_date, max_date),
+        value=(
+            min_date,
+            max_date
+        ),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(period, (tuple, list))
+        not isinstance(
+            period,
+            (tuple, list)
+        )
         or len(period) != 2
     ):
 
@@ -1250,12 +1353,18 @@ elif st.session_state.page == "region":
 
         st.stop()
 
-    start = pd.to_datetime(period[0])
-    end = pd.to_datetime(period[1])
+    start = pd.to_datetime(
+        period[0]
+    )
+
+    end = pd.to_datetime(
+        period[1]
+    )
 
     region_data = df[
         (df[COL_DATE] >= start)
-        & (df[COL_DATE] <= end)
+        &
+        (df[COL_DATE] <= end)
     ].copy()
 
     region_data["지역"] = (
@@ -1297,9 +1406,13 @@ elif st.session_state.page == "region":
         use_container_width=True
     )
 
-    st.subheader("📋 지역별 발전량")
+    st.subheader(
+        "📋 지역별 발전량"
+    )
 
-    region_table = region_rank.copy()
+    region_table = (
+        region_rank.copy()
+    )
 
     region_table["발전량(MWh)"] = (
         region_table[COL_GEN] / 1000
@@ -1317,3 +1430,4 @@ elif st.session_state.page == "region":
         hide_index=True,
         use_container_width=True
     )
+    
