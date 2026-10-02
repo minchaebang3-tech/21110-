@@ -74,6 +74,37 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
+    /* 메인 제목 영역 */
+    .hero {
+        background: linear-gradient(
+            135deg,
+            #EDF7E9 0%,
+            #FFF9E8 100%
+        );
+
+        border: 1px solid #DCE8DC;
+        border-radius: 28px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-icon {
+        font-size: 3rem;
+    }
+
+    .hero-title {
+        color: #245C3A;
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-top: 0.5rem;
+    }
+
+    .hero-subtitle {
+        color: #617064;
+        font-size: 1.05rem;
+        margin-top: 0.5rem;
+    }
+
     /* 안내 박스 */
     .info-box {
         background-color: #F0F7ED;
@@ -618,13 +649,28 @@ def get_region(facility):
 # ============================================================
 if st.session_state.page == "home":
 
-    # 메인 상단 (HTML 태그 없이 streamlit 기본 기능으로만 만들어서
-    # 태그 글자가 그대로 보일 걱정이 없어요)
-    st.title("☀️ 신재생에너지 발전량 분석")
-    st.caption("공공데이터로 살펴보는 우리의 친환경 에너지 생산")
-    st.write("")
+    st.markdown(
+        """
+        <div class="hero">
 
-    # 요청한 문구
+            <div class="hero-icon">
+                ☀️
+            </div>
+
+            <div class="hero-title">
+                신재생에너지 발전량 분석
+            </div>
+
+            <div class="hero-subtitle">
+                공공데이터로 살펴보는
+                우리의 친환경 에너지 생산
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.subheader(
         "🌿 원하는 분석 선택!"
     )
@@ -645,7 +691,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "📈  일별 발전량\n\n"
-            "날짜별 발전량과 평균 이용률 확인",
+            "날짜별 발전량과 평균 이용률을 확인합니다.",
             key="daily_button",
             use_container_width=True
         ):
@@ -656,7 +702,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "📊  월별 발전량\n\n"
-            "월별 발전량 변화 비교",
+            "월별 발전량 변화를 비교합니다.",
             key="monthly_button",
             use_container_width=True
         ):
@@ -674,7 +720,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "🏆  발전설비별 순위\n\n"
-            "발전설비별 총 발전량 비교",
+            "발전설비별 총 발전량을 비교합니다.",
             key="ranking_button",
             use_container_width=True
         ):
@@ -685,7 +731,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "🗺️  지역별 발전량\n\n"
-            "발전설비의 지역별 발전량 비교",
+            "발전설비의 지역별 발전량을 비교합니다.",
             key="region_button",
             use_container_width=True
         ):
@@ -694,7 +740,6 @@ if st.session_state.page == "home":
 
     st.write("")
 
-    # 데이터 기간
     st.markdown(
         f"""
         <div class="info-box">
@@ -710,7 +755,6 @@ if st.session_state.page == "home":
         unsafe_allow_html=True
     )
 
-    # 출처
     st.markdown(
         """
         <div class="source-box">
@@ -1172,15 +1216,12 @@ elif st.session_state.page == "ranking":
         len(facility_rank)
     )
 
-    if max_n <= 1:
-        top_n = max_n
-    else:
-        top_n = st.slider(
-            "표시할 발전설비 수",
-            min_value=1,
-            max_value=max_n,
-            value=min(10, max_n)
-        )
+    top_n = st.slider(
+        "표시할 발전설비 수",
+        min_value=5,
+        max_value=max_n,
+        value=min(10, max_n)
+    )
 
     top_facilities = (
         facility_rank
@@ -1259,17 +1300,11 @@ elif st.session_state.page == "region":
         "추정하여 발전량을 비교합니다."
     )
 
-    st.markdown(
-        """
-        <div class="info-box">
-
-            💡 별도의 지역 컬럼이 없어
-            발전설비 이름의 앞부분을 기준으로
-            지역을 추정했습니다.
-
-        </div>
-        """,
-        unsafe_allow_html=True
+    # ★ HTML 코드가 화면에 나타나지 않도록 st.info 사용
+    st.info(
+        "💡 별도의 지역 컬럼이 없어 "
+        "발전설비 이름의 앞부분을 기준으로 "
+        "지역을 추정했습니다."
     )
 
     min_date = (
