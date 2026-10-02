@@ -74,37 +74,6 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* 메인 제목 영역 */
-    .hero {
-        background: linear-gradient(
-            135deg,
-            #EDF7E9 0%,
-            #FFF9E8 100%
-        );
-
-        border: 1px solid #DCE8DC;
-        border-radius: 28px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .hero-icon {
-        font-size: 3rem;
-    }
-
-    .hero-title {
-        color: #245C3A;
-        font-size: 2.5rem;
-        font-weight: 900;
-        margin-top: 0.5rem;
-    }
-
-    .hero-subtitle {
-        color: #617064;
-        font-size: 1.05rem;
-        margin-top: 0.5rem;
-    }
-
     /* 안내 박스 */
     .info-box {
         background-color: #F0F7ED;
@@ -649,29 +618,6 @@ def get_region(facility):
 # ============================================================
 if st.session_state.page == "home":
 
-    # 메인 상단
-    st.markdown(
-        """
-        <div class="hero">
-
-            <div class="hero-icon">
-                ☀️
-            </div>
-
-            <div class="hero-title">
-                신재생에너지 발전량 분석
-            </div>
-
-            <div class="hero-subtitle">
-                공공데이터로 살펴보는
-                우리의 친환경 에너지 생산
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
     # 요청한 문구
     st.subheader(
         "🌿 원하는 분석 선택!"
@@ -693,7 +639,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "📈  일별 발전량\n\n"
-            "날짜별 발전량과 평균 이용률을 확인합니다.",
+            "날짜별 발전량과 평균 이용률 확인",
             key="daily_button",
             use_container_width=True
         ):
@@ -704,7 +650,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "📊  월별 발전량\n\n"
-            "월별 발전량 변화를 비교합니다.",
+            "월별 발전량 변화 비교",
             key="monthly_button",
             use_container_width=True
         ):
@@ -722,7 +668,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "🏆  발전설비별 순위\n\n"
-            "발전설비별 총 발전량을 비교합니다.",
+            "발전설비별 총 발전량 비교",
             key="ranking_button",
             use_container_width=True
         ):
@@ -733,7 +679,7 @@ if st.session_state.page == "home":
 
         if st.button(
             "🗺️  지역별 발전량\n\n"
-            "발전설비의 지역별 발전량을 비교합니다.",
+            "발전설비의 지역별 발전량 비교",
             key="region_button",
             use_container_width=True
         ):
@@ -1220,12 +1166,15 @@ elif st.session_state.page == "ranking":
         len(facility_rank)
     )
 
-    top_n = st.slider(
-        "표시할 발전설비 수",
-        min_value=5,
-        max_value=max_n,
-        value=min(10, max_n)
-    )
+    if max_n <= 1:
+        top_n = max_n
+    else:
+        top_n = st.slider(
+            "표시할 발전설비 수",
+            min_value=1,
+            max_value=max_n,
+            value=min(10, max_n)
+        )
 
     top_facilities = (
         facility_rank
@@ -1430,4 +1379,3 @@ elif st.session_state.page == "region":
         hide_index=True,
         use_container_width=True
     )
-    
