@@ -74,14 +74,13 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* 메인 제목 영역 */
+    /* 메인 제목 */
     .hero {
         background: linear-gradient(
             135deg,
             #EDF7E9 0%,
             #FFF9E8 100%
         );
-
         border: 1px solid #DCE8DC;
         border-radius: 28px;
         padding: 2.5rem;
@@ -192,10 +191,7 @@ def find_data_file():
         "*.xls"
     ):
         candidates += glob.glob(
-            os.path.join(
-                BASE_DIR,
-                pattern
-            )
+            os.path.join(BASE_DIR, pattern)
         )
 
     candidates = sorted(candidates)
@@ -583,7 +579,6 @@ except Exception as e:
 # 페이지 상태
 # ============================================================
 if "page" not in st.session_state:
-
     st.session_state.page = "home"
 
 
@@ -649,31 +644,24 @@ def get_region(facility):
 # ============================================================
 if st.session_state.page == "home":
 
+    # 메인 제목
     st.markdown(
         """
         <div class="hero">
-
-            <div class="hero-icon">
-                ☀️
-            </div>
-
+            <div class="hero-icon">☀️</div>
             <div class="hero-title">
                 신재생에너지 발전량 분석
             </div>
-
             <div class="hero-subtitle">
-                공공데이터로 살펴보는
+                공공데이터로 살펴보는<br>
                 우리의 친환경 에너지 생산
             </div>
-
         </div>
         """,
         unsafe_allow_html=True
     )
 
-    st.subheader(
-        "🌿 원하는 분석 선택!"
-    )
+    st.subheader("🌿 원하는 분석 선택!")
 
     st.write(
         "원하는 분석을 선택하면 "
@@ -740,30 +728,30 @@ if st.session_state.page == "home":
 
     st.write("")
 
+    # --------------------------------------------------------
+    # 데이터 기간
+    # --------------------------------------------------------
     st.markdown(
         f"""
         <div class="info-box">
-
             📅 <b>데이터 기간</b><br>
-
             {df[COL_DATE].min().strftime('%Y-%m-%d')}
             ~
             {df[COL_DATE].max().strftime('%Y-%m-%d')}
-
         </div>
         """,
         unsafe_allow_html=True
     )
 
+    # --------------------------------------------------------
+    # 데이터 출처
+    # --------------------------------------------------------
     st.markdown(
         """
         <div class="source-box">
-
             ☀️ <b>데이터 출처</b><br>
-
-            공공데이터포털(data.go.kr)
+            공공데이터포털(data.go.kr)<br>
             한국중부발전(주) 신재생에너지 발전량
-
         </div>
         """,
         unsafe_allow_html=True
@@ -798,9 +786,7 @@ if st.session_state.page == "daily":
         "일별 발전량을 확인하세요."
     )
 
-    st.sidebar.header(
-        "🌿 조건 선택"
-    )
+    st.sidebar.header("🌿 조건 선택")
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -812,33 +798,18 @@ if st.session_state.page == "daily":
         default=facilities
     )
 
-    min_date = (
-        df[COL_DATE]
-        .min()
-        .date()
-    )
-
-    max_date = (
-        df[COL_DATE]
-        .max()
-        .date()
-    )
+    min_date = df[COL_DATE].min().date()
+    max_date = df[COL_DATE].max().date()
 
     period = st.sidebar.date_input(
         "기간",
-        value=(
-            min_date,
-            max_date
-        ),
+        value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(
-            period,
-            (tuple, list)
-        )
+        not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
 
@@ -856,13 +827,8 @@ if st.session_state.page == "daily":
 
         st.stop()
 
-    start = pd.to_datetime(
-        period[0]
-    )
-
-    end = pd.to_datetime(
-        period[1]
-    )
+    start = pd.to_datetime(period[0])
+    end = pd.to_datetime(period[1])
 
     filtered = df[
         (df[COL_FAC].isin(selected))
@@ -880,15 +846,9 @@ if st.session_state.page == "daily":
 
         st.stop()
 
-    total_gen = (
-        filtered[COL_GEN]
-        .sum()
-    )
+    total_gen = filtered[COL_GEN].sum()
 
-    num_days = (
-        filtered[COL_DATE]
-        .nunique()
-    )
+    num_days = filtered[COL_DATE].nunique()
 
     daily_avg = (
         total_gen / num_days
@@ -909,9 +869,7 @@ if st.session_state.page == "daily":
             * 100
         )
 
-        util_text = (
-            f"{utilization:.1f} %"
-        )
+        util_text = f"{utilization:.1f} %"
 
     else:
 
@@ -939,10 +897,7 @@ if st.session_state.page == "daily":
     daily = (
         filtered
         .groupby(
-            [
-                COL_DATE,
-                COL_FAC
-            ],
+            [COL_DATE, COL_FAC],
             as_index=False
         )[COL_GEN]
         .sum()
@@ -971,9 +926,7 @@ if st.session_state.page == "daily":
         use_container_width=True
     )
 
-    st.subheader(
-        "📋 데이터 표"
-    )
+    st.subheader("📋 데이터 표")
 
     table = filtered.copy()
 
@@ -1000,9 +953,7 @@ elif st.session_state.page == "monthly":
         "월별 발전량의 변화를 한눈에 비교합니다."
     )
 
-    st.sidebar.header(
-        "🌿 조건 선택"
-    )
+    st.sidebar.header("🌿 조건 선택")
 
     facilities = sorted(
         df[COL_FAC].unique()
@@ -1014,33 +965,18 @@ elif st.session_state.page == "monthly":
         default=facilities
     )
 
-    min_date = (
-        df[COL_DATE]
-        .min()
-        .date()
-    )
-
-    max_date = (
-        df[COL_DATE]
-        .max()
-        .date()
-    )
+    min_date = df[COL_DATE].min().date()
+    max_date = df[COL_DATE].max().date()
 
     period = st.sidebar.date_input(
         "기간",
-        value=(
-            min_date,
-            max_date
-        ),
+        value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(
-            period,
-            (tuple, list)
-        )
+        not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
 
@@ -1058,13 +994,8 @@ elif st.session_state.page == "monthly":
 
         st.stop()
 
-    start = pd.to_datetime(
-        period[0]
-    )
-
-    end = pd.to_datetime(
-        period[1]
-    )
+    start = pd.to_datetime(period[0])
+    end = pd.to_datetime(period[1])
 
     filtered = df[
         (df[COL_FAC].isin(selected))
@@ -1092,10 +1023,7 @@ elif st.session_state.page == "monthly":
     monthly = (
         monthly
         .groupby(
-            [
-                "월",
-                COL_FAC
-            ],
+            ["월", COL_FAC],
             as_index=False
         )[COL_GEN]
         .sum()
@@ -1123,9 +1051,7 @@ elif st.session_state.page == "monthly":
         use_container_width=True
     )
 
-    st.subheader(
-        "📋 월별 발전량 표"
-    )
+    st.subheader("📋 월별 발전량 표")
 
     st.dataframe(
         monthly,
@@ -1139,42 +1065,25 @@ elif st.session_state.page == "monthly":
 # ============================================================
 elif st.session_state.page == "ranking":
 
-    st.title(
-        "🏆 발전설비별 발전량 순위"
-    )
+    st.title("🏆 발전설비별 발전량 순위")
 
     st.caption(
         "선택한 기간 동안 발전량이 많은 "
         "설비를 비교합니다."
     )
 
-    min_date = (
-        df[COL_DATE]
-        .min()
-        .date()
-    )
-
-    max_date = (
-        df[COL_DATE]
-        .max()
-        .date()
-    )
+    min_date = df[COL_DATE].min().date()
+    max_date = df[COL_DATE].max().date()
 
     period = st.date_input(
         "비교 기간",
-        value=(
-            min_date,
-            max_date
-        ),
+        value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(
-            period,
-            (tuple, list)
-        )
+        not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
 
@@ -1184,13 +1093,8 @@ elif st.session_state.page == "ranking":
 
         st.stop()
 
-    start = pd.to_datetime(
-        period[0]
-    )
-
-    end = pd.to_datetime(
-        period[1]
-    )
+    start = pd.to_datetime(period[0])
+    end = pd.to_datetime(period[1])
 
     ranking = df[
         (df[COL_DATE] >= start)
@@ -1226,9 +1130,7 @@ elif st.session_state.page == "ranking":
     top_facilities = (
         facility_rank
         .head(top_n)
-        .sort_values(
-            COL_GEN
-        )
+        .sort_values(COL_GEN)
     )
 
     fig = px.bar(
@@ -1253,13 +1155,9 @@ elif st.session_state.page == "ranking":
         use_container_width=True
     )
 
-    st.subheader(
-        "📋 전체 발전설비 순위"
-    )
+    st.subheader("📋 전체 발전설비 순위")
 
-    ranking_table = (
-        facility_rank.copy()
-    )
+    ranking_table = facility_rank.copy()
 
     ranking_table.insert(
         0,
@@ -1270,13 +1168,10 @@ elif st.session_state.page == "ranking":
         )
     )
 
-    ranking_table = (
-        ranking_table.rename(
-            columns={
-                COL_GEN:
-                "총 발전량(kWh)"
-            }
-        )
+    ranking_table = ranking_table.rename(
+        columns={
+            COL_GEN: "총 발전량(kWh)"
+        }
     )
 
     st.dataframe(
@@ -1291,49 +1186,33 @@ elif st.session_state.page == "ranking":
 # ============================================================
 elif st.session_state.page == "region":
 
-    st.title(
-        "🗺️ 지역별 발전량"
-    )
+    st.title("🗺️ 지역별 발전량")
 
     st.caption(
         "발전설비 이름을 기준으로 지역을 "
         "추정하여 발전량을 비교합니다."
     )
 
-    # ★ HTML 코드가 화면에 나타나지 않도록 st.info 사용
+    # HTML 대신 st.info 사용
+    # → <div> 같은 코드가 화면에 표시되지 않음
     st.info(
         "💡 별도의 지역 컬럼이 없어 "
         "발전설비 이름의 앞부분을 기준으로 "
         "지역을 추정했습니다."
     )
 
-    min_date = (
-        df[COL_DATE]
-        .min()
-        .date()
-    )
-
-    max_date = (
-        df[COL_DATE]
-        .max()
-        .date()
-    )
+    min_date = df[COL_DATE].min().date()
+    max_date = df[COL_DATE].max().date()
 
     period = st.date_input(
         "비교 기간",
-        value=(
-            min_date,
-            max_date
-        ),
+        value=(min_date, max_date),
         min_value=min_date,
         max_value=max_date
     )
 
     if (
-        not isinstance(
-            period,
-            (tuple, list)
-        )
+        not isinstance(period, (tuple, list))
         or len(period) != 2
     ):
 
@@ -1343,13 +1222,8 @@ elif st.session_state.page == "region":
 
         st.stop()
 
-    start = pd.to_datetime(
-        period[0]
-    )
-
-    end = pd.to_datetime(
-        period[1]
-    )
+    start = pd.to_datetime(period[0])
+    end = pd.to_datetime(period[1])
 
     region_data = df[
         (df[COL_DATE] >= start)
@@ -1396,13 +1270,9 @@ elif st.session_state.page == "region":
         use_container_width=True
     )
 
-    st.subheader(
-        "📋 지역별 발전량"
-    )
+    st.subheader("📋 지역별 발전량")
 
-    region_table = (
-        region_rank.copy()
-    )
+    region_table = region_rank.copy()
 
     region_table["발전량(MWh)"] = (
         region_table[COL_GEN] / 1000
