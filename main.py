@@ -34,37 +34,6 @@ st.markdown("""
         max-width: 1200px;
     }
 
-    /* 메인 제목 영역 */
-    .hero {
-        background: linear-gradient(
-            135deg,
-            #EDF7E9 0%,
-            #FFF9E8 100%
-        );
-
-        border: 1px solid #DCE8DC;
-        border-radius: 28px;
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .hero-icon {
-        font-size: 3rem;
-    }
-
-    .hero-title {
-        color: #245C3A;
-        font-size: 2.5rem;
-        font-weight: 900;
-        margin-top: 0.5rem;
-    }
-
-    .hero-subtitle {
-        color: #617064;
-        font-size: 1.05rem;
-        margin-top: 0.5rem;
-    }
-
     h1 {
         color: #245C3A;
         font-weight: 800;
@@ -649,29 +618,11 @@ def get_region(facility):
 # ============================================================
 if st.session_state.page == "home":
 
-    # 메인 상단 (HTML 태그가 그대로 글자로 보이지 않도록
-    # unsafe_allow_html=True를 꼭 같이 써야 해요)
-    st.markdown(
-        """
-        <div class="hero">
-
-            <div class="hero-icon">
-                ☀️
-            </div>
-
-            <div class="hero-title">
-                신재생에너지 발전량 분석
-            </div>
-
-            <div class="hero-subtitle">
-                공공데이터로 살펴보는
-                우리의 친환경 에너지 생산
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    # 메인 상단 (HTML 태그 없이 streamlit 기본 기능으로만 만들어서
+    # 태그 글자가 그대로 보일 걱정이 없어요)
+    st.title("☀️ 신재생에너지 발전량 분석")
+    st.caption("공공데이터로 살펴보는 우리의 친환경 에너지 생산")
+    st.write("")
 
     # 요청한 문구
     st.subheader(
