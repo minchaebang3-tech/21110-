@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 
 
@@ -11,6 +9,25 @@ st.set_page_config(
     page_icon="📖",
     layout="wide"
 )
+
+
+# ============================================================
+# HTML 출력 함수
+# → 줄 앞 공백과 빈 줄을 지워서
+#   HTML이 코드 블록으로 오인되어 화면에 그대로 뜨는 문제를 막음
+# ============================================================
+def show_html(body):
+
+    body = "\n".join(
+        line.strip()
+        for line in body.split("\n")
+        if line.strip()
+    )
+
+    st.markdown(
+        body,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
@@ -69,7 +86,7 @@ st.markdown("""
 # ============================================================
 # 제목
 # ============================================================
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -82,8 +99,7 @@ st.markdown(
         </p>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -92,19 +108,20 @@ st.markdown(
 # ============================================================
 st.header("🌿 1. 프로그램 소개")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
     이 프로그램은 한국중부발전의 신재생에너지 발전량
     공공데이터를 활용하여 발전량을 시각적으로 분석한다.
 
+    <br><br>
+
     사용자는 날짜와 발전설비를 선택하여 데이터를 확인하거나,
     월별·발전설비별·지역별로 발전량을 비교할 수 있다.
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -113,7 +130,7 @@ st.markdown(
 # ============================================================
 st.header("📊 2. 데이터 정보")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -133,8 +150,7 @@ st.markdown(
     </ul>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -143,7 +159,7 @@ st.markdown(
 # ============================================================
 st.header("📈 3. 일별 발전량")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -165,8 +181,7 @@ st.markdown(
     </ol>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -175,7 +190,7 @@ st.markdown(
 # ============================================================
 st.header("📊 4. 월별 발전량")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -190,13 +205,12 @@ st.markdown(
 
     <ol>
         <li>비교할 발전설비를 선택한다.</li>
-        <li>원하는 기간을 선택한다.</li>
+        <li>시작 월과 종료 월을 선택한다.</li>
         <li>월별 막대그래프를 확인한다.</li>
     </ol>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -205,7 +219,7 @@ st.markdown(
 # ============================================================
 st.header("🏆 5. 발전설비별 순위")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -226,8 +240,7 @@ st.markdown(
     </ol>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -236,7 +249,7 @@ st.markdown(
 # ============================================================
 st.header("🗺️ 6. 지역별 발전량")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -248,8 +261,7 @@ st.markdown(
     </p>
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 st.info(
@@ -263,7 +275,7 @@ st.info(
 # ============================================================
 st.header("⚡ 7. 평균 이용률이란?")
 
-st.markdown(
+show_html(
     """
     <div class="guide-box">
 
@@ -285,8 +297,7 @@ st.markdown(
     설비용량을 더 많이 활용하여 발전했다는 것을 의미한다.
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
@@ -295,7 +306,7 @@ st.markdown(
 # ============================================================
 st.header("💡 8. 이용 팁")
 
-st.markdown(
+show_html(
     """
     <div class="tip-box">
 
@@ -316,15 +327,14 @@ st.markdown(
     발전량의 전체적인 차이를 파악하기 쉽다.
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
 
 
 # ============================================================
 # 데이터 출처
 # ============================================================
-st.markdown(
+show_html(
     """
     <div class="source-box">
 
@@ -334,6 +344,5 @@ st.markdown(
         한국중부발전(주) 신재생에너지 발전량
 
     </div>
-    """,
-    unsafe_allow_html=True
+    """
 )
