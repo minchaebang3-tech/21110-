@@ -965,23 +965,27 @@ elif st.session_state.page == "monthly":
         default=facilities
     )
 
-    min_date = df[COL_DATE].min().date()
-    max_date = df[COL_DATE].max().date()
-
-    period = st.sidebar.date_input(
-        "기간",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date
+    # 데이터에 있는 월 목록 (예: 2024-01, 2024-02, ...)
+    month_list = sorted(
+        df[COL_DATE].dt.strftime("%Y-%m").unique()
     )
 
-    if (
-        not isinstance(period, (tuple, list))
-        or len(period) != 2
-    ):
+    start_month = st.sidebar.selectbox(
+        "시작 월",
+        month_list,
+        index=0
+    )
+
+    end_month = st.sidebar.selectbox(
+        "종료 월",
+        month_list,
+        index=len(month_list) - 1
+    )
+
+    if start_month > end_month:
 
         st.warning(
-            "기간의 시작일과 종료일을 모두 선택해 주세요."
+            "시작 월이 종료 월보다 늦을 수 없어요."
         )
 
         st.stop()
@@ -994,8 +998,12 @@ elif st.session_state.page == "monthly":
 
         st.stop()
 
-    start = pd.to_datetime(period[0])
-    end = pd.to_datetime(period[1])
+    start = pd.to_datetime(start_month + "-01")
+
+    end = (
+        pd.to_datetime(end_month + "-01")
+        + pd.offsets.MonthEnd(0)
+    )
 
     filtered = df[
         (df[COL_FAC].isin(selected))
