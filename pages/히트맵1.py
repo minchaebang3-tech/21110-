@@ -478,6 +478,7 @@ except Exception as e:
 st.title("🔥 월별 이용률 히트맵")
 
 st.caption(
+    "원하는 월만 골라서 설비별 이용률을 비교해 보세요. "
     "색이 진할수록 설비용량 대비 발전을 많이 한 달이에요."
 )
 
@@ -493,26 +494,29 @@ selected = st.sidebar.multiselect(
     default=facilities
 )
 
+# 데이터에 있는 월 목록 (예: 2024-01)
 month_list = sorted(
     df[COL_DATE].dt.strftime("%Y-%m").unique()
 )
 
-start_month = st.sidebar.selectbox(
-    "시작 월",
+
+def month_label(m):
+
+    return f"{m[:4]}년 {int(m[5:])}월"
+
+
+# 기본값은 가장 최근 6개월 (너무 얇아지지 않게)
+selected_months = st.sidebar.multiselect(
+    "월 선택",
     month_list,
-    index=0
+    default=month_list[-6:],
+    format_func=month_label
 )
 
-end_month = st.sidebar.selectbox(
-    "종료 월",
-    month_list,
-    index=len(month_list) - 1
-)
-
-if start_month > end_month:
+if len(selected_months) == 0:
 
     st.warning(
-        "시작 월이 종료 월보다 늦을 수 없어요."
+        "월을 하나 이상 선택해 주세요."
     )
 
     st.stop()
@@ -525,23 +529,19 @@ if len(selected) == 0:
 
     st.stop()
 
-start = pd.to_datetime(start_month + "-01")
+data = df.copy()
 
-end = (
-    pd.to_datetime(end_month + "-01")
-    + pd.offsets.MonthEnd(0)
+data["월"] = (
+    data[COL_DATE]
+    .dt.strftime("%Y-%m")
 )
 
-filtered = df[
-    (df[COL_FAC].isin(selected))
+heat = data[
+    (data[COL_FAC].isin(selected))
     &
-    (df[COL_DATE] >= start)
+    (data["월"].isin(selected_months))
     &
-    (df[COL_DATE] <= end)
-]
-
-heat = filtered[
-    filtered[COL_CAP] > 0
+    (data[COL_CAP] > 0)
 ].copy()
 
 if heat.empty:
@@ -551,11 +551,6 @@ if heat.empty:
     )
 
     st.stop()
-
-heat["월"] = (
-    heat[COL_DATE]
-    .dt.strftime("%Y-%m")
-)
 
 heat["가능발전량"] = heat[COL_CAP] * 24
 
@@ -580,9 +575,14 @@ heat_table = heat_group.pivot(
     values="이용률"
 )
 
-# 월 이름을 한글로 바꾸기 (예: 2023-12 → 2023년 12월)
+# 선택한 월만, 시간 순서대로 가로축에 표시
+heat_table = heat_table[
+    sorted(heat_table.columns)
+]
+
+# 월 이름을 한글로 바꾸기 (예: 2024-07 → 2024년 7월)
 heat_table.columns = [
-    f"{m[:4]}년 {int(m[5:])}월"
+    month_label(m)
     for m in heat_table.columns
 ]
 
@@ -590,6 +590,9 @@ fig = px.imshow(
     heat_table,
     aspect="auto",
     color_continuous_scale="YlGn",
+    zmin=0,
+    zmax=100,
+    text_auto=".0f",
     labels={
         "x": "월",
         "y": "발전설비",
@@ -605,6 +608,7 @@ fig.update_xaxes(
 fig.update_layout(
     plot_bgcolor="white",
     paper_bgcolor="white",
+    dragmode="zoom",
     height=max(
         400,
         28 * len(heat_table) + 150
@@ -613,11 +617,17 @@ fig.update_layout(
 
 st.plotly_chart(
     fig,
-    use_container_width=True
+    use_container_width=True,
+    config={
+        "displayModeBar": True,
+        "displaylogo": False,
+        "scrollZoom": True
+    }
 )
 
 st.info(
-    "💡 이용률 = 실제 발전량 ÷ (설비용량 × 24시간) × 100"
+    "💡 이용률 = 실제 발전량 ÷ (설비용량 × 24시간) × 100  |  "
+    "색 범위는 0~100%로 고정했어요 (100%를 넘는 값은 가장 진한 색)."
 )
 
 
