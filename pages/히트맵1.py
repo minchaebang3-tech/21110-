@@ -580,6 +580,12 @@ heat_table = heat_group.pivot(
     values="이용률"
 )
 
+# 월 이름을 한글로 바꾸기 (예: 2023-12 → 2023년 12월)
+heat_table.columns = [
+    f"{m[:4]}년 {int(m[5:])}월"
+    for m in heat_table.columns
+]
+
 fig = px.imshow(
     heat_table,
     aspect="auto",
@@ -591,9 +597,18 @@ fig = px.imshow(
     }
 )
 
+# 월을 날짜가 아니라 칸(항목)으로 취급
+fig.update_xaxes(
+    type="category"
+)
+
 fig.update_layout(
     plot_bgcolor="white",
-    paper_bgcolor="white"
+    paper_bgcolor="white",
+    height=max(
+        400,
+        28 * len(heat_table) + 150
+    )
 )
 
 st.plotly_chart(
@@ -604,3 +619,23 @@ st.plotly_chart(
 st.info(
     "💡 이용률 = 실제 발전량 ÷ (설비용량 × 24시간) × 100"
 )
+
+
+# ============================================================
+# 이용률이 100%를 넘는 설비 확인
+# ============================================================
+over = (
+    heat_group[
+        heat_group["이용률"] > 100
+    ][COL_FAC]
+    .unique()
+)
+
+if len(over) > 0:
+
+    st.warning(
+        "⚠️ 이용률이 100%를 넘는 설비가 있어요. "
+        "설비용량을 24시간 내내 가동해도 100%가 최대라서 "
+        "원본 데이터의 설비용량이나 단위를 확인해야 해요: "
+        + ", ".join(over)
+    )
