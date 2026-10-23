@@ -473,15 +473,28 @@ except Exception as e:
 
 
 # ============================================================
-# 화면
+# 화면 제목
 # ============================================================
 st.title("🔥 월별 이용률 히트맵")
 
 st.caption(
-    "원하는 월만 골라서 설비별 이용률을 비교해 보세요. "
-    "색이 진할수록 설비용량 대비 발전을 많이 한 달이에요."
+    "발전설비가 달마다 얼마나 효율적으로 발전했는지 "
+    "색으로 한눈에 비교해요."
 )
 
+st.info(
+    "📖 **읽는 법**  \n"
+    "가로는 월, 세로는 발전설비예요. "
+    "칸의 색이 진할수록 그 달에 설비를 많이 활용했다는 뜻이고, "
+    "빈칸은 그 달 데이터가 없다는 뜻이에요.  \n"
+    "**이용률** = 실제 발전량 ÷ (설비용량 × 24시간) × 100  \n"
+    "예) 태양광은 밤에 발전을 못 해서 10~20% 정도가 정상이에요."
+)
+
+
+# ============================================================
+# 사이드바 조건
+# ============================================================
 st.sidebar.header("🌿 조건 선택")
 
 facilities = sorted(
@@ -494,7 +507,6 @@ selected = st.sidebar.multiselect(
     default=facilities
 )
 
-# 데이터에 있는 월 목록 (예: 2024-01)
 month_list = sorted(
     df[COL_DATE].dt.strftime("%Y-%m").unique()
 )
@@ -505,7 +517,7 @@ def month_label(m):
     return f"{m[:4]}년 {int(m[5:])}월"
 
 
-# 기본값은 가장 최근 6개월 (너무 얇아지지 않게)
+# 기본값은 가장 최근 6개월
 selected_months = st.sidebar.multiselect(
     "월 선택",
     month_list,
@@ -529,6 +541,10 @@ if len(selected) == 0:
 
     st.stop()
 
+
+# ============================================================
+# 이용률 계산
+# ============================================================
 data = df.copy()
 
 data["월"] = (
@@ -569,23 +585,88 @@ heat_group["이용률"] = (
     * 100
 )
 
+
+# ============================================================
+# 이상값 설비 찾기 (이용률 100% 초과)
+# → 지우지 않고 표시만 한다
+# ============================================================
+over_set = set(
+    heat_group[
+        heat_group["이용률"] > 100
+    ][COL_FAC]
+)
+
+
+# ============================================================
+# 표 만들기
+# ============================================================
 heat_table = heat_group.pivot(
     index=COL_FAC,
     columns="월",
     values="이용률"
 )
 
-# 선택한 월만, 시간 순서대로 가로축에 표시
+# 선택한 월만 시간 순서대로
 heat_table = heat_table[
     sorted(heat_table.columns)
 ]
 
-# 월 이름을 한글로 바꾸기 (예: 2024-07 → 2024년 7월)
+# 데이터가 아예 없는 설비 줄 제거
+heat_table = heat_table.dropna(how="all")
+
+# 평균 이용률이 높은 설비가 위로
+avg = heat_table.mean(axis=1)
+
+heat_table = heat_table.loc[
+    avg.sort_values(ascending=False).index
+]
+
+# 이상값 설비는 이름 앞에 ⚠️ 표시
+heat_table.index = [
+    f"⚠️ {name}" if name in over_set else name
+    for name in heat_table.index
+]
+
+# 월 이름을 한글로
 heat_table.columns = [
     month_label(m)
     for m in heat_table.columns
 ]
 
+
+# ============================================================
+# 한 줄 결론 (이상값 설비는 따로 구분해서 말해줌)
+# ============================================================
+avg_normal = (
+    heat_group[
+        ~heat_group[COL_FAC].isin(over_set)
+    ]
+    .groupby(COL_FAC)["이용률"]
+    .mean()
+)
+
+if len(avg_normal) > 0:
+
+    st.success(
+        f"🏆 정상 범위 설비 중 평균 이용률이 가장 높은 곳은 "
+        f"**{avg_normal.idxmax()}**({avg_normal.max():.1f}%), "
+        f"가장 낮은 곳은 **{avg_normal.idxmin()}**"
+        f"({avg_normal.min():.1f}%)예요."
+    )
+
+if len(over_set) > 0:
+
+    st.warning(
+        "⚠️ 표시가 붙은 설비는 이용률이 100%를 넘는 달이 있어요. "
+        "설비용량을 24시간 내내 최대로 돌려도 100%가 최대라서, "
+        "원본 데이터의 설비용량 값이나 단위가 다를 수 있어요. "
+        "데이터는 지우지 않고 그대로 보여주고, 아래에서 확인할 수 있어요."
+    )
+
+
+# ============================================================
+# 히트맵
+# ============================================================
 fig = px.imshow(
     heat_table,
     aspect="auto",
@@ -610,8 +691,8 @@ fig.update_layout(
     paper_bgcolor="white",
     dragmode="zoom",
     height=max(
-        400,
-        28 * len(heat_table) + 150
+        450,
+        30 * len(heat_table) + 150
     )
 )
 
@@ -625,27 +706,56 @@ st.plotly_chart(
     }
 )
 
-st.info(
-    "💡 이용률 = 실제 발전량 ÷ (설비용량 × 24시간) × 100  |  "
-    "색 범위는 0~100%로 고정했어요 (100%를 넘는 값은 가장 진한 색)."
+st.caption(
+    "색 범위는 0~100%로 고정했어요. "
+    "100%를 넘는 값은 가장 진한 색으로 보이고, "
+    "칸 안의 숫자는 실제 값 그대로예요."
 )
 
 
 # ============================================================
-# 이용률이 100%를 넘는 설비 확인
+# 이상값 설비 확인표
 # ============================================================
-over = (
-    heat_group[
-        heat_group["이용률"] > 100
-    ][COL_FAC]
-    .unique()
-)
+if len(over_set) > 0:
 
-if len(over) > 0:
+    with st.expander("🔍 이용률 100% 초과 설비 확인하기"):
 
-    st.warning(
-        "⚠️ 이용률이 100%를 넘는 설비가 있어요. "
-        "설비용량을 24시간 내내 가동해도 100%가 최대라서 "
-        "원본 데이터의 설비용량이나 단위를 확인해야 해요: "
-        + ", ".join(over)
-    )
+        check = (
+            heat[
+                heat[COL_FAC].isin(over_set)
+            ]
+            .groupby(COL_FAC)
+            .agg(
+                설비용량=(COL_CAP, "max"),
+                일평균발전량=(COL_GEN, "mean")
+            )
+            .reset_index()
+        )
+
+        check["이용률(%)"] = (
+            check["일평균발전량"]
+            / (check["설비용량"] * 24)
+            * 100
+        ).round(1)
+
+        check = check.rename(
+            columns={
+                "설비용량": "설비용량(kW)",
+                "일평균발전량": "일평균 발전량(kWh)"
+            }
+        )
+
+        check["일평균 발전량(kWh)"] = (
+            check["일평균 발전량(kWh)"].round(1)
+        )
+
+        st.write(
+            "설비용량(kW)이 실제 발전량에 비해 너무 작게 적혀 있으면 "
+            "이용률이 100%를 넘게 나와요."
+        )
+
+        st.dataframe(
+            check,
+            hide_index=True,
+            use_container_width=True
+        )
