@@ -678,7 +678,7 @@ if st.session_state.page == "home":
     with col1:
 
         if st.button(
-            "📈  일별 발전량\n\n"
+            " 일별 발전량\n\n"
             "날짜별 발전량과 평균 이용률 확인.",
             key="daily_button",
             use_container_width=True
@@ -689,7 +689,7 @@ if st.session_state.page == "home":
     with col2:
 
         if st.button(
-            "📊  월별 발전량\n\n"
+            " 월별 발전량\n\n"
             "월별 발전량 변화 비교.",
             key="monthly_button",
             use_container_width=True
@@ -707,7 +707,7 @@ if st.session_state.page == "home":
     with col3:
 
         if st.button(
-            "🏆  발전설비별 순위\n\n"
+            " 발전설비별 순위\n\n"
             "발전설비별 총 발전량 비교.",
             key="ranking_button",
             use_container_width=True
@@ -718,7 +718,7 @@ if st.session_state.page == "home":
     with col4:
 
         if st.button(
-            "🗺️  지역별 발전량\n\n"
+            " 지역별 발전량\n\n"
             "발전설비의 지역별 발전량 비교.",
             key="region_button",
             use_container_width=True
