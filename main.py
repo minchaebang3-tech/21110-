@@ -11,20 +11,20 @@ import streamlit as st
 
 
 # ============================================================
-# 그래프 기본 색 (초록 · 흙색 계열)
+# 그래프 기본 색 (눈에 잘 띄는 원색)
 # → 모든 그래프에 한 번에 적용됨
 # ============================================================
 pio.templates["eco"] = go.layout.Template(
     layout=go.Layout(
         colorway=[
-            "#2F7D4A",
-            "#8BC34A",
-            "#F2B134",
-            "#8D6E4B",
-            "#4FA3A5",
-            "#C97B4A",
-            "#6B8E23",
-            "#A7C957"
+            "#1F77FF",
+            "#FF3B30",
+            "#00B050",
+            "#FFB400",
+            "#8E44FF",
+            "#00BCD4",
+            "#FF6F00",
+            "#E91E63"
         ]
     )
 )
@@ -57,8 +57,8 @@ st.markdown("""
     .stApp {
         background: linear-gradient(
             180deg,
-            #EAF5E4 0%,
-            #F6FAF1 35%,
+            #ECFDF3 0%,
+            #F7FEF9 40%,
             #FFFFFF 100%
         );
     }
@@ -70,21 +70,21 @@ st.markdown("""
     }
 
     h1 {
-        color: #1F4D32;
+        color: #14532D;
         font-weight: 800;
     }
 
     h2, h3 {
-        color: #2F7D4A;
+        color: #16A34A;
     }
 
     p {
-        color: #4A5D4F;
+        color: #3F5F4B;
     }
 
     hr {
         border: none;
-        border-top: 2px dashed #BFDDB0;
+        border-top: 1px solid #BBF7D0;
         margin: 1.5rem 0;
     }
 
@@ -92,49 +92,37 @@ st.markdown("""
     .stButton > button {
         width: 100%;
         min-height: 90px;
-        border-radius: 22px;
-        border: 1px solid #BFDDB0;
-        border-left: 6px solid #4E9F3D;
+        border-radius: 20px;
+        border: 1.5px solid #BBF7D0;
         background-color: white;
-        color: #1F4D32;
+        color: #14532D;
         font-weight: 700;
         font-size: 1.05rem;
-        box-shadow: 0 6px 16px rgba(47, 125, 74, 0.10);
-        transition: 0.25s;
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.10);
+        transition: 0.2s;
     }
 
     .stButton > button:hover {
-        border-color: #4E9F3D;
-        background-color: #E6F4DD;
-        color: #1F4D32;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(47, 125, 74, 0.18);
+        border-color: #22C55E;
+        background-color: #DCFCE7;
+        color: #14532D;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(34, 197, 94, 0.18);
     }
 
     /* 메인 제목 */
     .hero {
-        position: relative;
-        overflow: hidden;
         background: linear-gradient(
             135deg,
-            #D8EEC9 0%,
-            #EEF6DA 55%,
-            #FFF3C9 100%
+            #DCFCE7 0%,
+            #ECFCCB 60%,
+            #E0F7FA 100%
         );
-        border: 1px solid #BFDDB0;
-        border-radius: 32px;
+        border: 1px solid #BBF7D0;
+        border-radius: 30px;
         padding: 2.5rem;
         margin-bottom: 2rem;
-        box-shadow: 0 8px 22px rgba(47, 125, 74, 0.10);
-    }
-
-    .hero::after {
-        content: "🌿";
-        position: absolute;
-        right: 2rem;
-        bottom: -1rem;
-        font-size: 9rem;
-        opacity: 0.18;
+        box-shadow: 0 8px 22px rgba(34, 197, 94, 0.10);
     }
 
     .hero-icon {
@@ -142,71 +130,66 @@ st.markdown("""
     }
 
     .hero-title {
-        color: #1F4D32;
+        color: #14532D;
         font-size: 2.5rem;
         font-weight: 900;
         margin-top: 0.5rem;
     }
 
     .hero-subtitle {
-        color: #4F6B55;
+        color: #3F6B50;
         font-size: 1.05rem;
         margin-top: 0.5rem;
     }
 
     /* 안내 박스 */
     .info-box {
-        background-color: #EAF6E3;
-        border-left: 6px solid #4E9F3D;
+        background-color: #ECFDF3;
+        border: 1px solid #BBF7D0;
         border-radius: 14px;
         padding: 1rem 1.2rem;
-        color: #2F5A3C;
+        color: #166534;
         margin: 1rem 0;
     }
 
     /* 출처 박스 */
     .source-box {
-        background-color: #FFF6D6;
-        border: 1px solid #F0DC96;
+        background-color: #F7FEE7;
+        border: 1px solid #D9F99D;
         border-radius: 14px;
         padding: 1rem;
-        color: #6F6030;
+        color: #4D6B1F;
         margin-top: 1.5rem;
     }
 
     /* 수치 카드 */
     [data-testid="stMetric"] {
         background-color: white;
-        border: 1px solid #D5E8CB;
-        border-top: 5px solid #4E9F3D;
+        border: 1px solid #BBF7D0;
         border-radius: 18px;
         padding: 1.2rem;
-        box-shadow: 0 4px 14px rgba(47, 125, 74, 0.08);
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.08);
     }
 
     [data-testid="stMetricLabel"] {
-        color: #5E7A64;
+        color: #5B7F68;
     }
 
     [data-testid="stMetricValue"] {
-        color: #1F4D32;
+        color: #15803D;
         font-weight: 800;
     }
 
     /* 사이드바 */
     [data-testid="stSidebar"] {
-        background: linear-gradient(
-            180deg,
-            #DDF0D2 0%,
-            #F0F8EA 100%
-        );
-        border-right: 1px solid #BFDDB0;
+        background-color: #F0FDF4;
+        border-right: 1px solid #BBF7D0;
     }
 
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3 {
-        color: #1F4D32;
+        color: #14532D;
     }
 
 </style>
