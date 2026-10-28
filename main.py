@@ -5,7 +5,31 @@ import os
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
+
+
+# ============================================================
+# 그래프 기본 색 (초록 · 흙색 계열)
+# → 모든 그래프에 한 번에 적용됨
+# ============================================================
+pio.templates["eco"] = go.layout.Template(
+    layout=go.Layout(
+        colorway=[
+            "#2F7D4A",
+            "#8BC34A",
+            "#F2B134",
+            "#8D6E4B",
+            "#4FA3A5",
+            "#C97B4A",
+            "#6B8E23",
+            "#A7C957"
+        ]
+    )
+)
+
+pio.templates.default = "plotly+eco"
 
 
 # ============================================================
@@ -24,8 +48,19 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+    h1, h2, h3, p, li, label, .hero-title, .hero-subtitle {
+        font-family: 'Gowun Dodum', sans-serif;
+    }
+
     .stApp {
-        background-color: #F7FAF5;
+        background: linear-gradient(
+            180deg,
+            #EAF5E4 0%,
+            #F6FAF1 35%,
+            #FFFFFF 100%
+        );
     }
 
     .block-container {
@@ -35,21 +70,21 @@ st.markdown("""
     }
 
     h1 {
-        color: #245C3A;
+        color: #1F4D32;
         font-weight: 800;
     }
 
     h2, h3 {
-        color: #2F6B45;
+        color: #2F7D4A;
     }
 
     p {
-        color: #4F6255;
+        color: #4A5D4F;
     }
 
     hr {
         border: none;
-        border-top: 1px solid #DCE8DC;
+        border-top: 2px dashed #BFDDB0;
         margin: 1.5rem 0;
     }
 
@@ -57,34 +92,49 @@ st.markdown("""
     .stButton > button {
         width: 100%;
         min-height: 90px;
-        border-radius: 18px;
-        border: 1px solid #C9DEC9;
+        border-radius: 22px;
+        border: 1px solid #BFDDB0;
+        border-left: 6px solid #4E9F3D;
         background-color: white;
-        color: #245C3A;
+        color: #1F4D32;
         font-weight: 700;
         font-size: 1.05rem;
-        box-shadow: 0 4px 12px rgba(45, 90, 55, 0.06);
-        transition: 0.2s;
+        box-shadow: 0 6px 16px rgba(47, 125, 74, 0.10);
+        transition: 0.25s;
     }
 
     .stButton > button:hover {
-        border-color: #78A96F;
-        background-color: #EDF6E9;
-        color: #245C3A;
-        transform: translateY(-2px);
+        border-color: #4E9F3D;
+        background-color: #E6F4DD;
+        color: #1F4D32;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(47, 125, 74, 0.18);
     }
 
     /* 메인 제목 */
     .hero {
+        position: relative;
+        overflow: hidden;
         background: linear-gradient(
             135deg,
-            #EDF7E9 0%,
-            #FFF9E8 100%
+            #D8EEC9 0%,
+            #EEF6DA 55%,
+            #FFF3C9 100%
         );
-        border: 1px solid #DCE8DC;
-        border-radius: 28px;
+        border: 1px solid #BFDDB0;
+        border-radius: 32px;
         padding: 2.5rem;
         margin-bottom: 2rem;
+        box-shadow: 0 8px 22px rgba(47, 125, 74, 0.10);
+    }
+
+    .hero::after {
+        content: "🌿";
+        position: absolute;
+        right: 2rem;
+        bottom: -1rem;
+        font-size: 9rem;
+        opacity: 0.18;
     }
 
     .hero-icon {
@@ -92,66 +142,71 @@ st.markdown("""
     }
 
     .hero-title {
-        color: #245C3A;
+        color: #1F4D32;
         font-size: 2.5rem;
         font-weight: 900;
         margin-top: 0.5rem;
     }
 
     .hero-subtitle {
-        color: #617064;
+        color: #4F6B55;
         font-size: 1.05rem;
         margin-top: 0.5rem;
     }
 
     /* 안내 박스 */
     .info-box {
-        background-color: #F0F7ED;
-        border-left: 5px solid #76A86B;
-        border-radius: 12px;
+        background-color: #EAF6E3;
+        border-left: 6px solid #4E9F3D;
+        border-radius: 14px;
         padding: 1rem 1.2rem;
-        color: #45604B;
+        color: #2F5A3C;
         margin: 1rem 0;
     }
 
     /* 출처 박스 */
     .source-box {
-        background-color: #FFF9E7;
-        border: 1px solid #F0E2A9;
-        border-radius: 12px;
+        background-color: #FFF6D6;
+        border: 1px solid #F0DC96;
+        border-radius: 14px;
         padding: 1rem;
-        color: #6D623B;
+        color: #6F6030;
         margin-top: 1.5rem;
     }
 
     /* 수치 카드 */
     [data-testid="stMetric"] {
         background-color: white;
-        border: 1px solid #DCE8DC;
+        border: 1px solid #D5E8CB;
+        border-top: 5px solid #4E9F3D;
         border-radius: 18px;
         padding: 1.2rem;
-        box-shadow: 0 3px 12px rgba(45, 90, 55, 0.05);
+        box-shadow: 0 4px 14px rgba(47, 125, 74, 0.08);
     }
 
     [data-testid="stMetricLabel"] {
-        color: #68786D;
+        color: #5E7A64;
     }
 
     [data-testid="stMetricValue"] {
-        color: #245C3A;
+        color: #1F4D32;
         font-weight: 800;
     }
 
     /* 사이드바 */
     [data-testid="stSidebar"] {
-        background-color: #EFF6EC;
-        border-right: 1px solid #DCE8DC;
+        background: linear-gradient(
+            180deg,
+            #DDF0D2 0%,
+            #F0F8EA 100%
+        );
+        border-right: 1px solid #BFDDB0;
     }
 
     [data-testid="stSidebar"] h1,
     [data-testid="stSidebar"] h2,
     [data-testid="stSidebar"] h3 {
-        color: #245C3A;
+        color: #1F4D32;
     }
 
 </style>
