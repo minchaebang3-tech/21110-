@@ -36,8 +36,19 @@ def show_html(body):
 st.markdown("""
 <style>
 
+    @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
+
+    h1, h2, h3, p, li, label {
+        font-family: 'Gowun Dodum', sans-serif;
+    }
+
     .stApp {
-        background-color: #F7FAF5;
+        background: linear-gradient(
+            180deg,
+            #ECFDF3 0%,
+            #F7FEF9 40%,
+            #FFFFFF 100%
+        );
     }
 
     .block-container {
@@ -46,37 +57,56 @@ st.markdown("""
         max-width: 1100px;
     }
 
-    h1, h2, h3 {
-        color: #245C3A;
+    h1 {
+        color: #14532D;
+        font-weight: 800;
+    }
+
+    h2, h3 {
+        color: #16A34A;
     }
 
     p {
-        color: #4F6255;
+        color: #3F5F4B;
     }
 
     .guide-box {
         background-color: white;
-        border: 1px solid #DCE8DC;
-        border-radius: 18px;
+        border: 1px solid #BBF7D0;
+        border-radius: 20px;
         padding: 1.5rem;
         margin: 1rem 0;
-        box-shadow: 0 3px 12px rgba(45, 90, 55, 0.05);
+        box-shadow: 0 4px 14px rgba(34, 197, 94, 0.08);
     }
 
     .tip-box {
-        background-color: #F0F7ED;
-        border-left: 5px solid #76A86B;
-        border-radius: 12px;
+        background-color: #ECFDF3;
+        border: 1px solid #BBF7D0;
+        border-radius: 14px;
         padding: 1rem 1.2rem;
         margin: 1rem 0;
     }
 
     .source-box {
-        background-color: #FFF9E7;
-        border: 1px solid #F0E2A9;
-        border-radius: 12px;
+        background-color: #F7FEE7;
+        border: 1px solid #D9F99D;
+        border-radius: 14px;
         padding: 1rem 1.2rem;
         margin-top: 1rem;
+    }
+
+    /* 안내 메시지(st.info) */
+    [data-testid="stAlert"] {
+        background-color: #ECFDF3;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+        border-radius: 14px;
+    }
+
+    /* 사이드바 */
+    [data-testid="stSidebar"] {
+        background-color: #F0FDF4;
+        border-right: 1px solid #BBF7D0;
     }
 
 </style>
